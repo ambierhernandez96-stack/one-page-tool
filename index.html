@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>One Page Tool</title>
+<style>
+  :root {
+    --bg: #f6f7f9; --card: #fff; --text: #1c1f26; --muted: #6b7280;
+    --border: #e2e5ea; --accent: #4f46e5; --accent-text: #fff;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #14161a; --card: #1e2128; --text: #eceef2; --muted: #9aa1ad; --border: #2f343d; --accent: #818cf8; --accent-text: #14161a; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 16px/1.5 system-ui, -apple-system, Segoe UI, sans-serif; background: var(--bg); color: var(--text); }
+  header { text-align: center; padding: 40px 16px 8px; }
+  h1 { margin: 0 0 4px; font-size: 2rem; }
+  header p { margin: 0; color: var(--muted); }
+  nav { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; padding: 20px 16px 0; }
+  nav button { border: 1px solid var(--border); background: var(--card); color: var(--text); padding: 8px 16px; border-radius: 999px; cursor: pointer; font: inherit; }
+  nav button[aria-selected="true"] { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+  main { max-width: 680px; margin: 20px auto 60px; padding: 0 16px; }
+  section { display: none; background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px; }
+  section.active { display: block; }
+  h2 { margin-top: 0; font-size: 1.2rem; }
+  label { display: block; font-size: .85rem; color: var(--muted); margin: 12px 0 4px; }
+  textarea, input[type=text], input[type=number], select {
+    width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px;
+    background: var(--bg); color: var(--text); font: inherit;
+  }
+  textarea { min-height: 150px; resize: vertical; }
+  input[type=color] { width: 60px; height: 40px; border: none; background: none; padding: 0; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+  .btn { border: 1px solid var(--border); background: var(--card); color: var(--text); padding: 8px 14px; border-radius: 8px; cursor: pointer; font: inherit; }
+  .btn.primary { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; margin-top: 12px; }
+  .stat { background: var(--bg); border-radius: 10px; padding: 10px; text-align: center; }
+  .stat b { display: block; font-size: 1.5rem; }
+  .stat span { color: var(--muted); font-size: .8rem; }
+  .out { margin-top: 12px; padding: 12px; background: var(--bg); border-radius: 8px; font-family: ui-monospace, monospace; word-break: break-all; min-height: 44px; }
+  .swatch { height: 70px; border-radius: 10px; border: 1px solid var(--border); margin-top: 12px; }
+  footer { text-align: center; color: var(--muted); font-size: .85rem; padding-bottom: 30px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>One Page Tool</h1>
+  <p>A few handy utilities, all on one page. Everything runs in your browser.</p>
+</header>
+
+<nav role="tablist" id="tabs">
+  <button role="tab" data-tab="count" aria-selected="true">Word Counter</button>
+  <button role="tab" data-tab="case" aria-selected="false">Text Case</button>
+  <button role="tab" data-tab="pass" aria-selected="false">Password</button>
+  <button role="tab" data-tab="color" aria-selected="false">Color</button>
+  <button role="tab" data-tab="json" aria-selected="false">JSON</button>
+</nav>
+
+<main>
+  <section id="count" class="active">
+    <h2>Word Counter</h2>
+    <textarea id="countIn" placeholder="Type or paste text…"></textarea>
+    <div class="stats">
+      <div class="stat"><b id="cWords">0</b><span>words</span></div>
+      <div class="stat"><b id="cChars">0</b><span>characters</span></div>
+      <div class="stat"><b id="cNoSp">0</b><span>no spaces</span></div>
+      <div class="stat"><b id="cSent">0</b><span>sentences</span></div>
+      <div class="stat"><b id="cRead">0</b><span>min read</span></div>
+    </div>
+  </section>
+
+  <section id="case">
+    <h2>Text Case Converter</h2>
+    <textarea id="caseIn" placeholder="Type or paste text…"></textarea>
+    <div class="row" id="caseBtns">
+      <button class="btn" data-c="upper">UPPER</button>
+      <button class="btn" data-c="lower">lower</button>
+      <button class="btn" data-c="title">Title Case</button>
+      <button class="btn" data-c="sentence">Sentence case</button>
+      <button class="btn" data-c="camel">camelCase</button>
+      <button class="btn" data-c="snake">snake_case</button>
+      <button class="btn" data-c="kebab">kebab-case</button>
+      <button class="btn primary" id="caseCopy">Copy</button>
+    </div>
+  </section>
+
+  <section id="pass">
+    <h2>Password Generator</h2>
+    <label>Length: <span id="pLenVal">16</span></label>
+    <input type="range" id="pLen" min="6" max="64" value="16" style="width:100%">
+    <div class="row">
+      <label style="margin:0"><input type="checkbox" id="pUp" checked> A–Z</label>
+      <label style="margin:0"><input type="checkbox" id="pLow" checked> a–z</label>
+      <label style="margin:0"><input type="checkbox" id="pNum" checked> 0–9</label>
+      <label style="margin:0"><input type="checkbox" id="pSym" checked> !@#$</label>
+    </div>
+    <div class="out" id="pOut"></div>
+    <div class="row">
+      <button class="btn primary" id="pGen">Generate</button>
+      <button class="btn" id="pCopy">Copy</button>
+    </div>
+  </section>
+
+  <section id="color">
+    <h2>Color Converter</h2>
+    <label>Pick a color</label>
+    <input type="color" id="colIn" value="#4f46e5">
+    <div class="swatch" id="colSw"></div>
+    <div class="out" id="colOut"></div>
+  </section>
+
+  <section id="json">
+    <h2>JSON Formatter</h2>
+    <textarea id="jsonIn" placeholder='{"paste":"json here"}'></textarea>
+    <div class="row">
+      <button class="btn primary" id="jFmt">Format</button>
+      <button class="btn" id="jMin">Minify</button>
+      <button class="btn" id="jCopy">Copy</button>
+    </div>
+    <div class="out" id="jMsg"></div>
+  </section>
+</main>
+
+<footer>Built as a single HTML file — no dependencies, no tracking.</footer>
+
+<script>
+const $ = id => document.getElementById(id);
+const copy = t => navigator.clipboard && navigator.clipboard.writeText(t);
+
+// Tabs
+document.querySelectorAll('#tabs button').forEach(b => b.onclick = () => {
+  document.querySelectorAll('#tabs button').forEach(x => x.setAttribute('aria-selected', x === b));
+  document.querySelectorAll('section').forEach(s => s.classList.toggle('active', s.id === b.dataset.tab));
+});
+
+// Word counter
+$('countIn').oninput = () => {
+  const t = $('countIn').value, w = t.trim() ? t.trim().split(/\s+/).length : 0;
+  $('cWords').textContent = w;
+  $('cChars').textContent = t.length;
+  $('cNoSp').textContent = t.replace(/\s/g, '').length;
+  $('cSent').textContent = (t.match(/[^.!?]+[.!?]+/g) || (t.trim() ? [t] : [])).length;
+  $('cRead').textContent = Math.max(w ? 1 : 0, Math.round(w / 200));
+};
+
+// Case converter
+const words = s => s.toLowerCase().match(/[a-z0-9]+/g) || [];
+const cases = {
+  upper: s => s.toUpperCase(),
+  lower: s => s.toLowerCase(),
+  title: s => s.toLowerCase().replace(/\b\w/g, c => c.toUpperCase()),
+  sentence: s => s.toLowerCase().replace(/(^\s*|[.!?]\s+)([a-z])/g, (m, a, b) => a + b.toUpperCase()),
+  camel: s => words(s).map((w, i) => i ? w[0].toUpperCase() + w.slice(1) : w).join(''),
+  snake: s => words(s).join('_'),
+  kebab: s => words(s).join('-'),
+};
+$('caseBtns').onclick = e => {
+  const c = e.target.dataset.c;
+  if (c) $('caseIn').value = cases[c]($('caseIn').value);
+};
+$('caseCopy').onclick = () => copy($('caseIn').value);
+
+// Password
+function gen() {
+  const sets = [['pUp','ABCDEFGHIJKLMNOPQRSTUVWXYZ'],['pLow','abcdefghijklmnopqrstuvwxyz'],['pNum','0123456789'],['pSym','!@#$%^&*()-_=+[]{}?']]
+    .filter(([id]) => $(id).checked).map(x => x[1]);
+  if (!sets.length) { $('pOut').textContent = 'Select at least one character set.'; return; }
+  const all = sets.join(''), n = +$('pLen').value, rnd = new Uint32Array(n + sets.length);
+  crypto.getRandomValues(rnd);
+  const pick = (s, r) => s[r % s.length];
+  const chars = sets.map((s, i) => pick(s, rnd[i]));           // guarantee one of each set
+  for (let i = 0; i < n - sets.length; i++) chars.push(pick(all, rnd[sets.length + i]));
+  for (let i = chars.length - 1; i > 0; i--) {                 // shuffle
+    const j = crypto.getRandomValues(new Uint32Array(1))[0] % (i + 1);
+    [chars[i], chars[j]] = [chars[j], chars[i]];
+  }
+  $('pOut').textContent = chars.join('');
+}
+$('pLen').oninput = () => { $('pLenVal').textContent = $('pLen').value; gen(); };
+['pUp','pLow','pNum','pSym'].forEach(id => $(id).onchange = gen);
+$('pGen').onclick = gen;
+$('pCopy').onclick = () => copy($('pOut').textContent);
+gen();
+
+// Color
+function updColor() {
+  const hex = $('colIn').value, n = parseInt(hex.slice(1), 16);
+  const r = n >> 16, g = (n >> 8) & 255, b = n & 255;
+  const mx = Math.max(r, g, b) / 255, mn = Math.min(r, g, b) / 255, l = (mx + mn) / 2, d = mx - mn;
+  let h = 0, s = 0;
+  if (d) {
+    s = d / (1 - Math.abs(2 * l - 1));
+    const R = r / 255, G = g / 255, B = b / 255;
+    h = mx === R ? ((G - B) / d) % 6 : mx === G ? (B - R) / d + 2 : (R - G) / d + 4;
+    h = Math.round((h * 60 + 360) % 360);
+  }
+  $('colSw').style.background = hex;
+  $('colOut').innerHTML = `HEX ${hex.toUpperCase()}<br>RGB rgb(${r}, ${g}, ${b})<br>HSL hsl(${h}, ${Math.round(s * 100)}%, ${Math.round(l * 100)}%)`;
+}
+$('colIn').oninput = updColor;
+updColor();
+
+// JSON
+function jsonDo(indent) {
+  try {
+    $('jsonIn').value = JSON.stringify(JSON.parse($('jsonIn').value), null, indent);
+    $('jMsg').textContent = 'Valid JSON ✓';
+  } catch (e) { $('jMsg').textContent = 'Invalid JSON: ' + e.message; }
+}
+$('jFmt').onclick = () => jsonDo(2);
+$('jMin').onclick = () => jsonDo();
+$('jCopy').onclick = () => copy($('jsonIn').value);
+</script>
+</body>
+</html>
